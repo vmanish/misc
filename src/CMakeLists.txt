@@ -2,6 +2,8 @@
 set(SOURCES
     main.cpp
     Person.cpp
+    MergeSortStrategy.cpp  # Add this line
+    InsertionSortStrategy.cpp  # Add this line if not already present
 )
 
 # Add header files
@@ -12,7 +14,8 @@ set(HEADERS
 # Add the library for shared code
 add_library(misc_lib
     Person.cpp
-    # Add other source files here
+    MergeSortStrategy.cpp  # Add this line
+    InsertionSortStrategy.cpp  # Add this line if not already present
 )
 
 # Add the include directory for the library

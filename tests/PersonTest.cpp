@@ -1,6 +1,23 @@
 #include "Person.hpp"
+#include "MergeSortStrategy.hpp"
+#include "InsertionSortStrategy.hpp"
 #include <gtest/gtest.h>
-#include <sstream>
+#include <chrono>
+#include <iostream>
+
+using namespace std;
+using namespace std::chrono;
+
+// Helper function to build a large test team
+unique_ptr<Person> buildLargeTestTeam(size_t size) {
+    unique_ptr<Person> team = nullptr;
+    for (size_t i = 0; i < size; ++i) {
+        auto person = make_unique<Person>("Person" + to_string(size - i), rand() % 100, "cake");
+        person->next = move(team);
+        team = move(person);
+    }
+    return team;
+}
 
 // Helper function to build a team for testing
 std::unique_ptr<Person> buildTestTeam() {
@@ -103,4 +120,63 @@ TEST(PersonTest, SortByAgeHandlesSingleNodeList) {
     EXPECT_EQ(sortedTeam->data->age, 30);
     EXPECT_EQ(sortedTeam->data->cake_or_cookie, "cake");
     EXPECT_EQ(sortedTeam->next, nullptr);
+}
+
+TEST(PersonTest, MergeSortStrategyWorks) {
+    auto team = buildTestTeam();
+    MergeSortStrategy mergeSort;
+    auto sortedTeam = mergeSort.sort(team);
+
+    ASSERT_NE(sortedTeam, nullptr);
+    EXPECT_EQ(sortedTeam->data->name, "Bob");
+    EXPECT_EQ(sortedTeam->next->data->name, "Alice");
+    EXPECT_EQ(sortedTeam->next->next->data->name, "Charlie");
+}
+
+TEST(PersonTest, InsertionSortStrategyWorks) {
+    auto team = buildTestTeam();
+    InsertionSortStrategy insertionSort;
+    auto sortedTeam = insertionSort.sort(team);
+
+    ASSERT_NE(sortedTeam, nullptr);
+    EXPECT_EQ(sortedTeam->data->name, "Bob");
+    EXPECT_EQ(sortedTeam->next->data->name, "Alice");
+    EXPECT_EQ(sortedTeam->next->next->data->name, "Charlie");
+}
+
+// Test: Performance comparison of MergeSortStrategy and InsertionSortStrategy
+TEST(PersonTest, SortStrategyPerformance) {
+    const size_t teamSize = 10000; // Adjust size for performance testing
+    auto team = buildLargeTestTeam(teamSize);
+
+    // Measure performance of MergeSortStrategy
+    MergeSortStrategy mergeSort;
+    auto startMerge = high_resolution_clock::now();
+    auto sortedMerge = mergeSort.sort(team);
+    auto endMerge = high_resolution_clock::now();
+    auto mergeDuration = duration_cast<milliseconds>(endMerge - startMerge).count();
+    cout << "MergeSortStrategy took " << mergeDuration << " ms for " << teamSize << " elements." << endl;
+
+    // Measure performance of InsertionSortStrategy
+    auto teamCopy = buildLargeTestTeam(teamSize); // Rebuild the team for a fair comparison
+    InsertionSortStrategy insertionSort;
+    auto startInsertion = high_resolution_clock::now();
+    auto sortedInsertion = insertionSort.sort(teamCopy);
+    auto endInsertion = high_resolution_clock::now();
+    auto insertionDuration = duration_cast<milliseconds>(endInsertion - startInsertion).count();
+    cout << "InsertionSortStrategy took " << insertionDuration << " ms for " << teamSize << " elements." << endl;
+
+    // Ensure both strategies produce sorted results
+    ASSERT_NE(sortedMerge, nullptr);
+    ASSERT_NE(sortedInsertion, nullptr);
+
+    Person* mergeCurrent = sortedMerge.get();
+    Person* insertionCurrent = sortedInsertion.get();
+    while (mergeCurrent && insertionCurrent) {
+        EXPECT_EQ(mergeCurrent->data->age, insertionCurrent->data->age);
+        mergeCurrent = mergeCurrent->next.get();
+        insertionCurrent = insertionCurrent->next.get();
+    }
+    EXPECT_EQ(mergeCurrent, nullptr);
+    EXPECT_EQ(insertionCurrent, nullptr);
 }
