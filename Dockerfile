@@ -9,7 +9,13 @@ RUN apk add --no-cache \
     build-base \
     cmake \
     git \
-    linux-headers
+    linux-headers \
+    gcc \
+    python3 \
+    py3-pip
+
+# Install gcovr for generating coverage reports
+RUN pip install gcovr
 
 # Download and build Google Test
 RUN git clone https://github.com/google/googletest.git /usr/src/gtest && \
@@ -27,14 +33,9 @@ WORKDIR /usr/src/app
 # Copy the project files into the container
 COPY . .
 
-# Create build directories and build Debug and Release versions
-RUN mkdir -p build/debug build/release && \
-    cd build/debug && \
-    cmake -DCMAKE_BUILD_TYPE=Debug ../.. && \
-    make && \
-    cd ../release && \
-    cmake -DCMAKE_BUILD_TYPE=Release ../.. && \
-    make
+# Run the build script to build Debug and Release versions, run tests, and generate coverage report
+RUN chmod +x ./build.sh 
+RUN ./build.sh
 
-# Default command to list the built binaries
-CMD ["sh", "-c", "ls -l ./build/debug/src/misc ./build/release/src/misc ./build/debug/tests/PersonTest ./build/release/tests/PersonTest"]
+# Default command to list the generated binaries and coverage report
+CMD ["sh", "-c", "ls -l ./build/debug/src/misc ./build/release/src/misc ./build/debug/tests/PersonTest ./build/release/tests/PersonTest && echo 'Coverage report available at ./build/debug/coverage.html'"]

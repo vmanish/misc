@@ -1,0 +1,9 @@
+# Ignore build directory
+build/
+
+# Ignore other temporary files
+*.o
+*.a
+*.so
+*.swp
+*.log

@@ -12,8 +12,8 @@ add_executable(PersonTest PersonTest.cpp)
 # Add the include directory for the test executable
 target_include_directories(PersonTest PRIVATE ${GTEST_INCLUDE_DIR} ../include)
 
-# Link the test executable with Google Test and the shared library
-target_link_libraries(PersonTest PRIVATE ${GTEST_LIBRARY} ${GTEST_MAIN_LIBRARY} pthread misc_lib)
+# Link the test executable with Google Test, the shared library, and coverage flags
+target_link_libraries(PersonTest PRIVATE ${GTEST_LIBRARY} ${GTEST_MAIN_LIBRARY} pthread misc_lib --coverage)
 
 # Add the test to CTest
 add_test(NAME PersonTest COMMAND PersonTest)

@@ -1,7 +1,15 @@
-#!/bin/bash
+#!/bin/sh
 # filepath: /home/manish/rnd/misc/misc/build.sh
 
 set -e  # Exit immediately if a command exits with a non-zero status
+
+# Remove the build directory
+if [ -d "build" ]; then
+    rm -rf build
+    echo "Build directory removed."
+else
+    echo "No build directory found."
+fi
 
 # Create build directories for Debug and Release
 mkdir -p build/debug build/release
@@ -11,6 +19,14 @@ echo "Building Debug version..."
 cd build/debug
 cmake -DCMAKE_BUILD_TYPE=Debug ../..
 make
+cd ../..
+
+# Run tests and generate coverage report
+echo "Running tests and generating coverage report..."
+cd build/debug
+./tests/PersonTest  # Run the Google Test binary directly
+gcovr -r ../.. --html --html-details -o coverage.html
+echo "Coverage report generated: build/debug/coverage.html"
 cd ../..
 
 # Build Release version

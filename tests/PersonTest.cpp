@@ -10,13 +10,44 @@ std::unique_ptr<Person> buildTestTeam() {
     return team;
 }
 
+// Mock input for building a team
+void mockInput(const std::string& input) {
+    static std::istringstream inputStream;
+    inputStream.str(input);
+    inputStream.clear(); // Clear any error flags
+    std::cin.rdbuf(inputStream.rdbuf());
+}
+
+
 // Test for building a team
 TEST(PersonTest, BuildTeam) {
+    // Mock input for building a team
+    std::string input =
+        "Alice\n30\ncake\ny\n"
+        "Bob\n25\ncookie\ny\n"
+        "Charlie\n35\ncake\nn\n";
+    mockInput(input);
+
     std::unique_ptr<Person> team = nullptr;
     Person::buildTeam(team);
 
+    // Verify the team is built correctly
     ASSERT_NE(team, nullptr);
+    EXPECT_EQ(team->data->name, "Charlie");
+    EXPECT_EQ(team->data->age, 35);
+    EXPECT_EQ(team->data->cake_or_cookie, "cake");
+
     ASSERT_NE(team->next, nullptr);
+    EXPECT_EQ(team->next->data->name, "Bob");
+    EXPECT_EQ(team->next->data->age, 25);
+    EXPECT_EQ(team->next->data->cake_or_cookie, "cookie");
+
+    ASSERT_NE(team->next->next, nullptr);
+    EXPECT_EQ(team->next->next->data->name, "Alice");
+    EXPECT_EQ(team->next->next->data->age, 30);
+    EXPECT_EQ(team->next->next->data->cake_or_cookie, "cake");
+
+    EXPECT_EQ(team->next->next->next, nullptr);
 }
 
 // Test for showing a team
